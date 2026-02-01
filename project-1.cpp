@@ -4,76 +4,66 @@
 
 using namespace std;
 
-int S = 32;
+constexpr int S = 32;
 
-void merge(vector<int>& arr, int left, int mid, int right){
-    int n1 = mid-left+1;
-    int n2 = right-mid;
-
-    // create temporary vectors by init and copying over
-    vector<int> L(n1), R(n2);
-    for(int i=0; i<n1; i++){
-        L[i] = arr[left+i];
-    }
-    for(int j=0; j<n2; j++){
-        R[j] = arr[mid+1+j];
-    }
-
-    // merge arrays back by comparing each of left and right
-    int i=0, j=0;
-    int k = left;
-    while (i<n1 && j<n2){
-        if(L[i]<R[j]){
-            arr[k] = L[i];
-            i++;
-        }
-        else{
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-
-    // add remainning elements of L and R into the array
-    while(i<n1){
-        arr[k] = L[i];
-        k++;
-        i++;
-    }
-    while(j<n2){
-        arr[k] = R[j];
-        k++;
-        j++;
-    }
-}
 void insert(vector<int>& arr, int left, int right){
     // assume the first index is already sorted
     for (int i=left+1; i<=right; i++){
         int key = arr[i];
         int j=i-1;
         // keep swappng until key > j
-        while (j>= left && key < arr[j]){ 
-            arr[j+1] = arr[j]; 
+        while (j>= left && key < arr[j]){
+            arr[j+1] = arr[j];
             j--;
         }
         arr[j+1] = key;
     }
 }
-void hybridSort(vector<int>& arr, int left, int right){
-    if(left >= right)
-        return;
-    int diff =  right-left+1;
-    if (diff<=S){
-        insert(arr,left, right);
+
+void merge(vector<int>& arr, vector<int>& temp, int left, int mid, int right){
+    // copy current segment into temp once
+    for (int i = left; i <= right; ++i) {
+        temp[i] = arr[i];
+    }
+
+    int i = left;
+    int j = mid + 1;
+    int k = left;
+
+    while (i <= mid && j <= right) {
+        if (temp[i] <= temp[j]) {
+            arr[k++] = temp[i++];
+        } else {
+            arr[k++] = temp[j++];
+        }
+    }
+    while (i <= mid) {
+        arr[k++] = temp[i++];
+    }
+    while (j <= right) {
+        arr[k++] = temp[j++];
+    }
+}
+
+void hybridSortImpl(vector<int>& arr, vector<int>& temp, int left, int right){
+    int diff = right - left + 1;
+    if (diff <= 1) return;
+    if (diff <= S){
+        insert(arr, left, right);
         return;
     }
-    // recursively split the arrays first
     int mid = left + (right - left) / 2;
-    hybridSort(arr, left, mid);
-    hybridSort(arr, mid + 1, right);
-    // merge then back 
-    merge(arr, left, mid, right);
+    hybridSortImpl(arr, temp, left, mid);
+    hybridSortImpl(arr, temp, mid + 1, right);
+    merge(arr, temp, left, mid, right);
 }
+
+void hybridSort(vector<int>& arr){
+    if (arr.empty()) return;
+    vector<int> temp(arr.size());
+    hybridSortImpl(arr, temp, 0, static_cast<int>(arr.size()) - 1);
+}
+
 int main(){
     vector<int> arr = {
         39, 12, 5, 18, 7, 33, 2, 29, 14, 1,
@@ -82,9 +72,7 @@ int main(){
         27, 15, 37, 0, 23, 34, 20, 38, 32, 36
     };
 
-    int n = arr.size();
-
-    hybridSort(arr, 0, n-1);
+    hybridSort(arr);
     for(int i=0; i<arr.size();i++){
         cout << arr[i] << " ";
     }
