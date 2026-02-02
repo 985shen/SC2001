@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <random>
 
 using namespace std;
 
@@ -64,18 +65,44 @@ void hybridSort(vector<int>& arr){
     hybridSortImpl(arr, temp, 0, static_cast<int>(arr.size()) - 1);
 }
 
+vector<int> generateRandomArray(int size, int maxValue) {
+    vector<int> arr(size);
+    
+    // random number generator
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dis(1, maxValue);
+    
+    for (int i = 0; i < size; i++){
+        arr[i] = dis(gen);
+    }
+    
+    return arr;
+}
+
 int main(){
-    vector<int> arr = {
-        39, 12, 5, 18, 7, 33, 2, 29, 14, 1,
-        26, 10, 31, 6, 22, 17, 9, 25, 8, 30,
-        13, 21, 4, 28, 16, 11, 35, 3, 24, 19,
-        27, 15, 37, 0, 23, 34, 20, 38, 32, 36
+    vector<int> sizes = {
+        1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000, 10000000
     };
 
-    hybridSort(arr);
-    for(int i=0; i<arr.size();i++){
-        cout << arr[i] << " ";
+    int maxValue = 10000000;
+
+    for (int size : sizes) {
+        cout << "Testing array of size: " << size << endl;
+
+        vector<int> arr = generateRandomArray(size, maxValue);
+
+        hybridSort(arr);
+
+        // verify if the arrays are sorted by checking first 20 elements
+        cout << "First 20 elements: ";
+
+        for (int i = 0; i < min(20, size); i++) {
+            cout << arr[i] << " ";
+        }
+
+        cout << "\n" << endl;
     }
-    cout << endl;
+
     return 0;
 }
