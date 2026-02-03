@@ -126,7 +126,7 @@ void testPartCII() {
     // fixed n, vary S
     cout << "\n=== Part (cii): Fixed n=1000000, varying S ===" << endl;
     
-    vector<int> sValues = {5, 10, 15, 20, 25, 30, 35, 40, 50, 75, 100};
+    vector<int> sValues = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
     int fixedSize = 1000000;
     int maxValue = 10000000;
     vector<pair<int, long long>> results;
@@ -150,7 +150,7 @@ void testPartCIII() {
     cout << "\n=== Part (ciii): Finding optimal value of S ===" << endl;
     
     vector<int> sizes = {10000, 100000, 1000000, 10000000};
-    vector<int> sValues = {5, 10, 15, 20, 25, 30, 35, 40, 50, 75, 100};
+    vector<int> sValues = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
     int maxValue = 10000000;
     
     ofstream file("results_ciii.csv");
