@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <climits>
+#include <chrono>
 
 using namespace std;
 
@@ -193,6 +194,73 @@ void testPartCIII() {
     cout << "\nResults saved to results_ciii.csv" << endl;
 }
 
+
+// -------------------- Original Mergesort (Part D) --------------------
+
+void mergeSortImpl(vector<int>& arr, vector<int>& temp, int left, int right){
+    int diff = right - left + 1;
+    if (diff <= 1) return;
+
+    int mid = left + (right - left) / 2;
+    mergeSortImpl(arr, temp, left, mid);
+    mergeSortImpl(arr, temp, mid + 1, right);
+    merge(arr, temp, left, mid, right); // uses comparisonCount
+}
+
+void mergeSort(vector<int>& arr){
+    if (arr.empty()) return;
+    comparisonCount = 0;
+    vector<int> temp(arr.size());
+    mergeSortImpl(arr, temp, 0, static_cast<int>(arr.size()) - 1);
+}
+
+// -------------------- Timing helper --------------------
+
+double secondsNow(){
+    using clock = chrono::high_resolution_clock;
+    return chrono::duration<double>(clock::now().time_since_epoch()).count();
+}
+
+// -------------------- Part (d): Hybrid vs Original Mergesort --------------------
+
+void testPartCIV(int optimalS){
+    cout << "\n=== Part (d): Hybrid vs Original Mergesort on n=10000000 ===" << endl;
+    cout << "Using S=" << optimalS << " for HybridSort" << endl;
+
+    int n = 10000000;
+    int maxValue = 10000000;
+
+    // using same dataset for both algorithms
+    vector<int> base = generateRandomArray(n, maxValue);
+    vector<int> arrHybrid = base;
+    vector<int> arrMerge = base;
+
+    // Hybrid sort timing + comparisons
+    double t0 = secondsNow();
+    hybridSort(arrHybrid, optimalS);
+    double t1 = secondsNow();
+    long long hybridComps = comparisonCount;
+    double hybridTime = t1 - t0;
+
+    // Original mergesort timing + comparisons
+    double t2 = secondsNow();
+    mergeSort(arrMerge);
+    double t3 = secondsNow();
+    long long mergeComps = comparisonCount;
+    double mergeTime = t3 - t2;
+
+    cout << left << setw(20) << "Algorithm" << setw(20) << "Comparisons" << "CPU Time (s)" << endl;
+    cout << string(60, '-') << endl;
+    cout << left << setw(20) << "HybridSort" << setw(20) << hybridComps << fixed << setprecision(6) << hybridTime << endl;
+    cout << left << setw(20) << "MergeSort"  << setw(20) << mergeComps  << fixed << setprecision(6) << mergeTime << endl;
+
+    ofstream file("results_part_d.csv");
+    file << "Algorithm,S,Comparisons,CPUTimeSeconds\n";
+    file << "HybridSort," << optimalS << "," << hybridComps << "," << fixed << setprecision(6) << hybridTime << "\n";
+    file << "MergeSort,0," << mergeComps << "," << fixed << setprecision(6) << mergeTime << "\n";
+    file.close();
+    cout << "Results saved to results_part_d.csv" << endl;
+}
 int main(){
     cout << "=====================================" << endl;
     cout << "Hybrid Sort Algorithm Analysis" << endl;
@@ -207,11 +275,13 @@ int main(){
     cout << "Testing part ciii" << endl;
     testPartCIII();
     cout << "\nPart ciii test complete\n" << endl;
+    cout << "Testing part civ" << endl;
+    int optimalS = 10;
+    testPartCIV(optimalS);
+    cout << "\nPart civ test complete\n" << endl;
     
     cout << "\n=====================================" << endl;
     cout << "All tests completed!" << endl;
     cout << "=====================================" << endl;
-    
     return 0;
-
 }
