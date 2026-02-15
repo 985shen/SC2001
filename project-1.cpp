@@ -246,7 +246,7 @@ void mergeSort(vector<int>& arr){
 
 // -------------------- Part (d): Hybrid vs Original Mergesort --------------------
 
-void testPartCIV(int optimalS){
+void testPartD(int optimalS){
     cout << "\n=== Part (d): Hybrid vs Original Mergesort on n=10000000 ===" << endl;
     cout << "Using S=" << optimalS << " for HybridSort" << endl;
 
@@ -300,7 +300,7 @@ int main(){
     cout << "\nPart ciii test complete\n" << endl;
     cout << "Testing part d" << endl;
     int optimalS = 10;
-    testPartCIV(optimalS);
+    testPartD(optimalS);
     cout << "\nPart d test complete\n" << endl;
     
     cout << "\n=====================================" << endl;
