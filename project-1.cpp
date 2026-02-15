@@ -187,7 +187,7 @@ void testPartCIII() {
 
     file << "Input n";
     for (int s : sValues) {
-        file << ", S= " << s << " Comparisons, CPU Time (s)" << s;
+        file << ", S = " << s << " Comparisons, CPU Time (s) for S = " << s;
     }
     file << "\n";
     
