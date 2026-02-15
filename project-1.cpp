@@ -91,11 +91,18 @@ vector<int> generateRandomArray(int size, int maxValue) {
     return arr;
 }
 
-void saveResults(const string& filename, const vector<pair<int, long long>>& data) {
+double secondsNow(){
+    using clock = chrono::high_resolution_clock;
+    return chrono::duration<double>(clock::now().time_since_epoch()).count();
+}
+
+void saveResults(const string& filename, const vector<int>& inputs, 
+                         const vector<long long>& comparisons, 
+                         const vector<double>& times, const string& header) {
     ofstream file(filename);
-    file << "Input n,Comparisons\n";
-    for (const auto& i : data) {
-        file << i.first << "," << i.second << "\n";
+    file << header << "\n";
+    for (size_t i = 0; i < inputs.size(); i++) {
+        file << inputs[i] << "," << comparisons[i] << "," << fixed << setprecision(6) << times[i] << "\n";
     }
     file.close();
     cout << "Results saved to " << filename << endl;
@@ -107,20 +114,31 @@ void testPartCI() {
     
     vector<int> sizes = {1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000, 10000000};
     int maxValue = 10000000;
-    vector<pair<int, long long>> results;
+
+    vector<int> inputSizes;
+    vector<long long> compCounts;
+    vector<double> cpuTimes;
     
-    cout << left << setw(15) << "Input n" << "Comparisons" << endl;
-    cout << string(40, '-') << endl;
+    cout << left << setw(15) << "Input n" << setw(20) << "Comparisons" << "CPU Time (s)" << endl;
+    cout << string(60, '-') << endl;
     
     for (int size : sizes) {
         vector<int> arr = generateRandomArray(size, maxValue);
-        hybridSort(arr);
         
-        cout << setw(15) << size << comparisonCount << endl;
-        results.push_back({size, comparisonCount});
+        // measure CPU time
+        double startTime = secondsNow();
+        hybridSort(arr);
+        double endTime = secondsNow();
+        double cpuTime = endTime - startTime;
+        
+        cout << setw(15) << size << setw(20) << comparisonCount << fixed << setprecision(6) << cpuTime << endl;
+        
+        inputSizes.push_back(size);
+        compCounts.push_back(comparisonCount);
+        cpuTimes.push_back(cpuTime);
     }
     
-    saveResults("results_ci.csv", results);
+    saveResults("results_ci.csv", inputSizes, compCounts, cpuTimes, "Input n,Comparisons,CPU Time (s)");
 }
 
 void testPartCII() {
@@ -130,26 +148,31 @@ void testPartCII() {
     vector<int> sValues = {10, 20, 30, 40, 50, 60 ,70 ,80, 90, 100};
     int fixedSize = 1000000;
     int maxValue = 10000000;
-    vector<pair<int, long long>> results;
+
+    vector<int> sVals;
+    vector<long long> compCounts;
+    vector<double> cpuTimes;
     
-    cout << left << setw(15) << "S value" << "Comparisons" << endl;
-    cout << string(40, '-') << endl;
+    cout << left << setw(15) << "S value" << setw(20) << "Comparisons" << "CPU Time (s)" << endl;
+    cout << string(60, '-') << endl;
     
     for (int s : sValues) {
         vector<int> arr = generateRandomArray(fixedSize, maxValue);
-        hybridSort(arr, s);
         
-        cout << setw(15) << s << comparisonCount << endl;
-        results.push_back({s, comparisonCount});
+        // measure CPU time
+        double startTime = secondsNow();
+        hybridSort(arr, s);
+        double endTime = secondsNow();
+        double cpuTime = endTime - startTime;
+        
+        cout << setw(15) << s << setw(20) << comparisonCount << fixed << setprecision(6) << cpuTime << endl;
+        
+        sVals.push_back(s);
+        compCounts.push_back(comparisonCount);
+        cpuTimes.push_back(cpuTime);
     }
     
-    ofstream file("results_cii.csv");
-    file << "S value,Comparisons\n";
-    for (const auto& p : results) {
-        file << p.first << "," << p.second << "\n";
-    }
-    file.close();
-    cout << "Results saved to results_cii.csv" << endl;
+    saveResults("results_cii.csv", sVals, compCounts, cpuTimes, "S value,Comparisons,CPU Time (s)");
 }
 
 void testPartCIII() {
@@ -161,9 +184,10 @@ void testPartCIII() {
     int maxValue = 10000000;
     
     ofstream file("results_ciii.csv");
+
     file << "Input n";
     for (int s : sValues) {
-        file << ",S=" << s;
+        file << ", S = " << s << " Comparisons, CPU Time (s) for S = " << s;
     }
     file << "\n";
     
@@ -176,9 +200,15 @@ void testPartCIII() {
         
         for (int s : sValues) {
             vector<int> arr = generateRandomArray(size, maxValue);
-            hybridSort(arr, s);
             
-            file << "," << comparisonCount;
+            // measure CPU time
+            double startTime = secondsNow();
+            hybridSort(arr, s);
+            double endTime = secondsNow();
+            double cpuTime = endTime - startTime;
+            
+            // save number of comparisons and CPU time in seconds
+            file << "," << comparisonCount << "," << fixed << setprecision(6) << cpuTime;
             
             if (comparisonCount < minComparisons) {
                 minComparisons = comparisonCount;
@@ -214,13 +244,6 @@ void mergeSort(vector<int>& arr){
     mergeSortImpl(arr, temp, 0, static_cast<int>(arr.size()) - 1);
 }
 
-// -------------------- Timing helper --------------------
-
-double secondsNow(){
-    using clock = chrono::high_resolution_clock;
-    return chrono::duration<double>(clock::now().time_since_epoch()).count();
-}
-
 // -------------------- Part (d): Hybrid vs Original Mergesort --------------------
 
 void testPartCIV(int optimalS){
@@ -254,12 +277,12 @@ void testPartCIV(int optimalS){
     cout << left << setw(20) << "HybridSort" << setw(20) << hybridComps << fixed << setprecision(6) << hybridTime << endl;
     cout << left << setw(20) << "MergeSort"  << setw(20) << mergeComps  << fixed << setprecision(6) << mergeTime << endl;
 
-    ofstream file("results_part_d.csv");
-    file << "Algorithm,S,Comparisons,CPUTimeSeconds\n";
+    ofstream file("results_d.csv");
+    file << "Algorithm,S,Comparisons,CPU Time (s)\n";
     file << "HybridSort," << optimalS << "," << hybridComps << "," << fixed << setprecision(6) << hybridTime << "\n";
     file << "MergeSort,0," << mergeComps << "," << fixed << setprecision(6) << mergeTime << "\n";
     file.close();
-    cout << "Results saved to results_part_d.csv" << endl;
+    cout << "Results saved to results_d.csv" << endl;
 }
 int main(){
     cout << "=====================================" << endl;
@@ -275,10 +298,10 @@ int main(){
     cout << "Testing part ciii" << endl;
     testPartCIII();
     cout << "\nPart ciii test complete\n" << endl;
-    cout << "Testing part civ" << endl;
+    cout << "Testing part d" << endl;
     int optimalS = 10;
     testPartCIV(optimalS);
-    cout << "\nPart civ test complete\n" << endl;
+    cout << "\nPart d test complete\n" << endl;
     
     cout << "\n=====================================" << endl;
     cout << "All tests completed!" << endl;
