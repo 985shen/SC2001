@@ -1,0 +1,4 @@
+Algorithm,S,Comparisons,CPU Time (s)
+HybridSort,10,226413222,22.613774
+MergeSort,0,220101207,22.783486
+HybridSort,20,242308699,19.881417
