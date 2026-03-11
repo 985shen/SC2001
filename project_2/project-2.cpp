@@ -2,6 +2,11 @@
 #include <vector>
 #include <queue>
 #include <climits>
+#include <chrono>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <iomanip>
 using namespace std;
 
 // part a
@@ -110,6 +115,160 @@ vector<int> dijkstra_b(vector<vector<pair<int, int>>> &adj, int src)
     return dist;
 }
 
+// -----------------------------------------------------------------------
+// Empirical analysis helpers
+// -----------------------------------------------------------------------
+
+// Generate a random DENSE adjacency matrix (every pair of nodes connected)
+vector<vector<int>> generateDenseMatrix(int V)
+{
+    vector<vector<int>> g(V, vector<int>(V, INT_MAX));
+    for (int i = 0; i < V; i++)
+    {
+        g[i][i] = 0;
+        for (int j = i + 1; j < V; j++)
+        {
+            int w = rand() % 100 + 1;
+            g[i][j] = g[j][i] = w;
+        }
+    }
+    return g;
+}
+
+// Generate a random SPARSE adjacency matrix (each node has ~5 neighbours)
+vector<vector<int>> generateSparseMatrix(int V)
+{
+    vector<vector<int>> g(V, vector<int>(V, INT_MAX));
+    for (int i = 0; i < V; i++)
+    {
+        g[i][i] = 0;
+        for (int k = 0; k < 5; k++)
+        {
+            int j = rand() % V;
+            if (i != j)
+            {
+                int w = rand() % 100 + 1;
+                g[i][j] = g[j][i] = w;
+            }
+        }
+    }
+    return g;
+}
+
+// Convert an adjacency matrix to an adjacency list (for dijkstra_b)
+vector<vector<pair<int, int>>> matrixToAdj(vector<vector<int>> &graph)
+{
+    int V = graph.size();
+    vector<vector<pair<int, int>>> adj(V);
+    for (int i = 0; i < V; i++)
+        for (int j = 0; j < V; j++)
+            if (graph[i][j] != INT_MAX && i != j)
+                adj[i].push_back({j, graph[i][j]});
+    return adj;
+}
+
+// Run timing experiments and write results to CSV files
+void runEmpirical()
+{
+    srand(42); // fixed seed for reproducibility
+
+    vector<int> sizes = {100, 200, 500, 1000, 2000, 3000, 5000};
+    int RUNS = 3; // average over multiple runs to reduce noise
+
+    ofstream csv_a("results_a.csv");
+    ofstream csv_b("results_b.csv");
+
+    // CSV headers
+    csv_a << "V,E_dense,Time_A_Dense_ms,E_sparse,Time_A_Sparse_ms\n";
+    csv_b << "V,E_dense,Time_B_Dense_ms,E_sparse,Time_B_Sparse_ms\n";
+
+    cout << "\n=== Empirical Analysis ===\n";
+    cout << fixed << setprecision(4);
+    cout << left
+         << setw(8)  << "V"
+         << setw(16) << "Dense_A(ms)"
+         << setw(16) << "Dense_B(ms)"
+         << setw(16) << "Sparse_A(ms)"
+         << setw(16) << "Sparse_B(ms)"
+         << "\n"
+         << string(72, '-') << "\n";
+
+    for (int V : sizes)
+    {
+        double total_a_dense = 0, total_b_dense = 0;
+        double total_a_sparse = 0, total_b_sparse = 0;
+        long long e_dense = 0, e_sparse = 0;
+
+        for (int run = 0; run < RUNS; run++)
+        {
+            // --- Dense graph ---
+            auto dense = generateDenseMatrix(V);
+            auto adj_dense = matrixToAdj(dense);
+
+            // Count edges (upper triangle only, undirected)
+            e_dense = (long long)V * (V - 1) / 2;
+
+            auto t1 = chrono::high_resolution_clock::now();
+            dijkstra_a(dense, 0);
+            auto t2 = chrono::high_resolution_clock::now();
+            total_a_dense += chrono::duration<double, milli>(t2 - t1).count();
+
+            t1 = chrono::high_resolution_clock::now();
+            dijkstra_b(adj_dense, 0);
+            t2 = chrono::high_resolution_clock::now();
+            total_b_dense += chrono::duration<double, milli>(t2 - t1).count();
+
+            // --- Sparse graph ---
+            auto sparse = generateSparseMatrix(V);
+            auto adj_sparse = matrixToAdj(sparse);
+
+            // Count actual sparse edges
+            long long edge_count = 0;
+            for (int i = 0; i < V; i++)
+                for (int j = i + 1; j < V; j++)
+                    if (sparse[i][j] != INT_MAX)
+                        edge_count++;
+            e_sparse = edge_count;
+
+            t1 = chrono::high_resolution_clock::now();
+            dijkstra_a(sparse, 0);
+            t2 = chrono::high_resolution_clock::now();
+            total_a_sparse += chrono::duration<double, milli>(t2 - t1).count();
+
+            t1 = chrono::high_resolution_clock::now();
+            dijkstra_b(adj_sparse, 0);
+            t2 = chrono::high_resolution_clock::now();
+            total_b_sparse += chrono::duration<double, milli>(t2 - t1).count();
+        }
+
+        double avg_a_dense  = total_a_dense  / RUNS;
+        double avg_b_dense  = total_b_dense  / RUNS;
+        double avg_a_sparse = total_a_sparse / RUNS;
+        double avg_b_sparse = total_b_sparse / RUNS;
+
+        // Write to CSVs
+        csv_a << V << "," << e_dense << "," << avg_a_dense << ","
+              << e_sparse << "," << avg_a_sparse << "\n";
+
+        csv_b << V << "," << e_dense << "," << avg_b_dense << ","
+              << e_sparse << "," << avg_b_sparse << "\n";
+
+        // Print to console
+        cout << left
+             << setw(8)  << V
+             << setw(16) << avg_a_dense
+             << setw(16) << avg_b_dense
+             << setw(16) << avg_a_sparse
+             << setw(16) << avg_b_sparse
+             << "\n";
+    }
+
+    csv_a.close();
+    csv_b.close();
+
+    cout << "\nResults saved to results_a.csv and results_b.csv\n";
+}
+
 int main()
 {
     int src = 0;
@@ -144,6 +303,9 @@ int main()
     for (int d : result_b)
         cout << d << " ";
     cout << "\n";
+
+    // Run empirical analysis and save CSVs
+    runEmpirical();
 
     return 0;
 }
