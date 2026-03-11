@@ -115,11 +115,8 @@ vector<int> dijkstra_b(vector<vector<pair<int, int>>> &adj, int src)
     return dist;
 }
 
-// -----------------------------------------------------------------------
-// Empirical analysis helpers
-// -----------------------------------------------------------------------
 
-// Generate a random DENSE adjacency matrix (every pair of nodes connected)
+// generate a random dense adjacency matrix (every pair of nodes connected)
 vector<vector<int>> generateDenseMatrix(int V)
 {
     vector<vector<int>> g(V, vector<int>(V, INT_MAX));
@@ -135,7 +132,7 @@ vector<vector<int>> generateDenseMatrix(int V)
     return g;
 }
 
-// Generate a random SPARSE adjacency matrix (each node has ~5 neighbours)
+// generate a random sparse adjacency matrix (each node has around 5 neighbours)
 vector<vector<int>> generateSparseMatrix(int V)
 {
     vector<vector<int>> g(V, vector<int>(V, INT_MAX));
@@ -155,7 +152,7 @@ vector<vector<int>> generateSparseMatrix(int V)
     return g;
 }
 
-// Convert an adjacency matrix to an adjacency list (for dijkstra_b)
+// convert an adjacency matrix to an adjacency list (for dijkstra_b)
 vector<vector<pair<int, int>>> matrixToAdj(vector<vector<int>> &graph)
 {
     int V = graph.size();
@@ -167,13 +164,13 @@ vector<vector<pair<int, int>>> matrixToAdj(vector<vector<int>> &graph)
     return adj;
 }
 
-// Run timing experiments and write results to CSV files
+// run analysis and save them in CSV files
 void runEmpirical()
 {
-    srand(42); // fixed seed for reproducibility
+    srand(42);
 
     vector<int> sizes = {100, 200, 400, 800, 1600, 3200, 6400, 12800};
-    int RUNS = 3; // average over multiple runs to reduce noise
+    int RUNS = 3;
 
     ofstream csv_a("results_a.csv");
     ofstream csv_b("results_b.csv");
@@ -201,11 +198,10 @@ void runEmpirical()
 
         for (int run = 0; run < RUNS; run++)
         {
-            // --- Dense graph ---
+            // dense graph analysis
             auto dense = generateDenseMatrix(V);
             auto adj_dense = matrixToAdj(dense);
 
-            // Count edges (upper triangle only, undirected)
             e_dense = (long long)V * (V - 1) / 2;
 
             auto t1 = chrono::high_resolution_clock::now();
@@ -218,11 +214,10 @@ void runEmpirical()
             t2 = chrono::high_resolution_clock::now();
             total_b_dense += chrono::duration<double, milli>(t2 - t1).count();
 
-            // --- Sparse graph ---
+            // sparse graph analysis
             auto sparse = generateSparseMatrix(V);
             auto adj_sparse = matrixToAdj(sparse);
 
-            // Count actual sparse edges
             long long edge_count = 0;
             for (int i = 0; i < V; i++)
                 for (int j = i + 1; j < V; j++)
@@ -246,14 +241,13 @@ void runEmpirical()
         double avg_a_sparse = total_a_sparse / RUNS;
         double avg_b_sparse = total_b_sparse / RUNS;
 
-        // Write to CSVs
+        // write to CSVs
         csv_a << V << "," << e_dense << "," << avg_a_dense << ","
               << e_sparse << "," << avg_a_sparse << "\n";
 
         csv_b << V << "," << e_dense << "," << avg_b_dense << ","
               << e_sparse << "," << avg_b_sparse << "\n";
 
-        // Print to console
         cout << left
              << setw(8)  << V
              << setw(16) << avg_a_dense
@@ -304,7 +298,7 @@ int main()
         cout << d << " ";
     cout << "\n";
 
-    // Run empirical analysis and save CSVs
+    // run empirical analysis and save CSVs
     runEmpirical();
 
     return 0;
