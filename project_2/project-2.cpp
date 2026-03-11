@@ -172,7 +172,7 @@ void runEmpirical()
 {
     srand(42); // fixed seed for reproducibility
 
-    vector<int> sizes = {100, 200, 500, 1000, 2000, 3000, 5000};
+    vector<int> sizes = {100, 200, 400, 800, 1600, 3200, 6400, 12800};
     int RUNS = 3; // average over multiple runs to reduce noise
 
     ofstream csv_a("results_a.csv");
