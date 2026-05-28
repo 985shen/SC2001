@@ -2,6 +2,17 @@
 
 ---
 
+## Project 1:
+-MergeSort & InsertionSort
+
+## Project 2:
+-Dijkstra's Algorithm
+
+## Project 3:
+-Dynamic Programming
+
+---
+
 ## How to Compile and Run
 
 ### Linux / macOS (g++ or clang++):
