@@ -3,7 +3,7 @@
 ---
 
 ## Project 1:
--MergeSort & InsertionSort
+-MergeSort,InsertionSort & HybridSort
 
 ## Project 2:
 -Dijkstra's Algorithm
