@@ -1,5 +1,11 @@
 # SC2001 - Algorithm Design and Analysis
 
+## Members
+- Wang Yongqing
+- Johannes Yap
+- Ong Jee Shen
+- Balodi Shalok
+
 ## Projects
 
 | # | Topic | Algorithms |
