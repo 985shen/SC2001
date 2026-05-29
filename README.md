@@ -1,4 +1,4 @@
-# SC2001 Algorithm Design and Analysis
+# SC2001 - Algorithm Design and Analysis
 
 ## Projects
 
